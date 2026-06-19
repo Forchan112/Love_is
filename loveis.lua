@@ -1,8 +1,3 @@
--- ==========================================================
---              TSUM [BETA] - Полный скрипт
---              Баланс | ESP | Телепорт | Покупка
---                  Фон "Love is..." 800x214
--- ==========================================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -11,45 +6,39 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- ==================== НАСТРОЙКИ ====================
-local Settings = {
-    ESPEnabled = true,               -- Включить ESP
-    TeleportEnabled = true,          -- Включить телепорт
-    AutoBuyEnabled = false,          -- Автопокупка (отключи, чтобы не банили)
-    LegendaryKeyword = "Legendary",  -- Ключевое слово для поиска
-    UpdateInterval = 0.5,            -- Интервал обновления (сек)
-    TeleportCooldown = 2,            -- Задержка между телепортами (сек)
-    BuyCooldown = 3,                 -- Задержка между покупками (сек)
-}
 
--- ==========================================================
---                  1. UI С ФОНОМ "Love is..."
--- ==========================================================
+local Settings = {
+    ESPEnabled = true,               
+    TeleportEnabled = true,          
+    AutoBuyEnabled = false,          
+    LegendaryKeyword = "Legendary",  
+    UpdateInterval = 0.5,            
+    TeleportCooldown = 2,            
+    BuyCooldown = 3,                 
+
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "LoveIsUI"
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Фоновое изображение (800x214)
 local background = Instance.new("ImageLabel")
-background.Size = UDim2.new(1, 0, 1, 0)     -- Растянуть на весь экран
+background.Size = UDim2.new(1, 0, 1, 0)     
 background.Position = UDim2.new(0, 0, 0, 0)
-background.BackgroundTransparency = 1        -- Прозрачный фон (сама картинка)
-background.ImageTransparency = 0             -- Картинка полностью видна
-background.ZIndex = 0                        -- Самый нижний слой
--- ===== ВСТАВЬ СВОЙ ID КАРТИНКИ =====
--- background.Image = "rbxassetid://1234567890"   -- через Roblox
--- или внешняя ссылка (рискованно):
--- background.Image = "https://i.imgur.com/твой_код.jpg"
--- Если внешняя ссылка не грузится, используй rbxassetid
-background.Image = "rbxassetid://1234567890"  -- ЗАМЕНИ НА СВОЙ ID
+background.BackgroundTransparency = 1       
+background.ImageTransparency = 0           
+background.ZIndex = 0                      
+
+
+
+background.Image = "rbxassetid://1234567890" 
 background.Parent = screenGui
 
--- Панель управления (полупрозрачная, чтобы фон был виден)
+
 local uiFrame = Instance.new("Frame")
 uiFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
 uiFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
 uiFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-uiFrame.BackgroundTransparency = 0.4          -- Прозрачность, чтобы видеть фон
+uiFrame.BackgroundTransparency = 0.4          
 uiFrame.BorderSizePixel = 2
 uiFrame.BorderColor3 = Color3.fromRGB(255, 215, 0)
 uiFrame.Active = true
@@ -57,7 +46,7 @@ uiFrame.Draggable = true
 uiFrame.ZIndex = 1
 uiFrame.Parent = screenGui
 
--- Заголовок "Love is..."
+
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 50)
 title.Position = UDim2.new(0, 0, 0, 0)
@@ -70,7 +59,7 @@ title.TextScaled = false
 title.ZIndex = 2
 title.Parent = uiFrame
 
--- Информация о балансе (будет обновляться)
+
 local balanceLabel = Instance.new("TextLabel")
 balanceLabel.Size = UDim2.new(1, 0, 0, 30)
 balanceLabel.Position = UDim2.new(0, 0, 0, 55)
@@ -82,7 +71,7 @@ balanceLabel.TextSize = 18
 balanceLabel.ZIndex = 2
 balanceLabel.Parent = uiFrame
 
--- Кнопка закрытия UI
+
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 40, 0, 40)
 closeBtn.Position = UDim2.new(1, -50, 0, 5)
@@ -97,7 +86,7 @@ closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Переключение видимости UI по Insert
+
 game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.Insert then
@@ -105,11 +94,9 @@ game:GetService("UserInputService").InputBegan:Connect(function(input, gameProce
     end
 end)
 
--- ==========================================================
---                  2. ОСНОВНЫЕ ФУНКЦИИ
--- ==========================================================
 
--- 2.1 Получение баланса
+
+
 local function getBalance()
     local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
     if leaderstats then
@@ -118,7 +105,7 @@ local function getBalance()
             return cash.Value
         end
     end
-    -- Попытка через RemoteFunction
+    
     local remote = ReplicatedStorage:FindFirstChild("GetBalance")
     if remote and remote:IsA("RemoteFunction") then
         local success, result = pcall(function()
@@ -129,7 +116,7 @@ local function getBalance()
     return nil
 end
 
--- 2.2 Поиск легендарок в стоке
+
 local function findLegendaryInStock()
     local legendaries = {}
     for _, obj in pairs(Workspace:GetDescendants()) do
@@ -140,7 +127,7 @@ local function findLegendaryInStock()
     return legendaries
 end
 
--- 2.3 ESP (подсветка)
+
 local espObjects = {}
 
 local function createESP(item)
@@ -204,7 +191,7 @@ local function updateESP()
     end
 end
 
--- 2.4 Телепорт к легендарке (с задержкой)
+
 local lastTeleportTime = 0
 local function teleportToItem(item)
     if not Settings.TeleportEnabled then return end
@@ -223,7 +210,7 @@ local function teleportToItem(item)
     print("🚀 Телепорт к:", item.Name)
 end
 
--- 2.5 Покупка легендарки (с задержкой)
+
 local lastBuyTime = 0
 local function buyLegendary(item)
     local now = tick()
@@ -232,7 +219,7 @@ local function buyLegendary(item)
         return
     end
     
-    -- Пытаемся найти Remote
+
     local remote = ReplicatedStorage:FindFirstChild("BuyItem")
     if remote and remote:IsA("RemoteEvent") then
         remote:FireServer(item)
@@ -246,7 +233,7 @@ local function buyLegendary(item)
         return
     end
     
-    -- Если Remote не найден, пробуем ClickDetector
+   
     local clickDetector = item:FindFirstChild("ClickDetector")
     if clickDetector then
         fireclickdetector(clickDetector)
@@ -257,11 +244,9 @@ local function buyLegendary(item)
     end
 end
 
--- ==========================================================
---                  3. ГЛАВНЫЙ ЦИКЛ
--- ==========================================================
+
 local function mainLoop()
-    -- Баланс
+ 
     local balance = getBalance()
     if balance then
         balanceLabel.Text = "💰 Баланс: " .. balance
@@ -269,27 +254,24 @@ local function mainLoop()
         balanceLabel.Text = "💰 Баланс: Не найден"
     end
     
-    -- Поиск легендарок
     local legendaries = findLegendaryInStock()
     if #legendaries > 0 then
-        -- Можно вывести в консоль
-        -- print("🔍 Найдено легендарок:", #legendaries)
+        
+       
     end
 end
 
--- Запускаем обновление ESP каждый кадр
+
 RunService.RenderStepped:Connect(updateESP)
 
--- Запускаем основной цикл с задержкой
+
 spawn(function()
     while task.wait(Settings.UpdateInterval) do
         mainLoop()
     end
 end)
 
--- ==========================================================
---                  4. ГОРЯЧИЕ КЛАВИШИ
--- ==========================================================
+
 local UserInputService = game:GetService("UserInputService")
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -305,7 +287,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
     
-    -- Клавиша Q: покупка ближайшей легендарки
+
     if input.KeyCode == Enum.KeyCode.Q then
         local legendaries = findLegendaryInStock()
         if #legendaries > 0 then
@@ -316,9 +298,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- ==========================================================
---                  5. ЗАВЕРШЕНИЕ
--- ==========================================================
+
 print("✅ Скрипт 'Love is...' загружен!")
 print("🔹 E - Телепорт к легендарке")
 print("🔹 Q - Купить легендарку")
